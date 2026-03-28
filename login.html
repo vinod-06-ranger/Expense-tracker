@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In – HostelBuddy</title>
+    <meta name="description" content="Sign in to HostelBuddy, your smart hostler expense tracker.">
+    <meta name="theme-color" content="#8b5cf6">
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f0f1a;
+            --card: #1a1a2e;
+            --purple: #8b5cf6;
+            --purple2: #667eea;
+            --blue: #3b82f6;
+            --text: #ffffff;
+            --muted: #a0aec0;
+            --dim: #64748b;
+            --red: #ef4444;
+            --border: rgba(255,255,255,0.08);
+            --grad-purple: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --grad-blue: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Left Panel */
+        .left-panel {
+            width: 55%;
+            background: linear-gradient(135deg, #1a0533 0%, #0f0f1a 40%, #0a1628 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+        .left-panel::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(139,92,246,0.2) 0%, transparent 70%);
+            top: -100px;
+            left: -100px;
+            animation: pulse 6s ease-in-out infinite;
+        }
+        .left-panel::after {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%);
+            bottom: -50px;
+            right: -50px;
+            animation: pulse 8s ease-in-out infinite reverse;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.6; }
+            50% { transform: scale(1.2); opacity: 1; }
+        }
+        .brand {
+            z-index: 1;
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        .brand-icon {
+            font-size: 72px;
+            display: block;
+            margin-bottom: 16px;
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+        }
+        .brand-name {
+            font-size: 42px;
+            font-weight: 800;
+            background: var(--grad-purple);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+        }
+        .brand-tagline {
+            font-size: 16px;
+            color: var(--muted);
+            font-weight: 400;
+        }
+        .features {
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: rgba(139,92,246,0.15);
+            border: 1px solid rgba(139,92,246,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+        .feature-text h4 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        .feature-text p {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        /* Right Panel */
+        .right-panel {
+            width: 45%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            background: var(--bg);
+        }
+        .form-card {
+            width: 100%;
+            max-width: 400px;
+        }
+        .form-title {
+            font-size: 30px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        .form-subtitle {
+            color: var(--muted);
+            font-size: 15px;
+            margin-bottom: 36px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--purple);
+            box-shadow: 0 0 0 3px rgba(139,92,246,0.2);
+        }
+        .form-group input::placeholder { color: var(--dim); }
+        .btn-login {
+            width: 100%;
+            padding: 16px;
+            background: var(--grad-purple);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 8px;
+            font-family: 'Inter', sans-serif;
+        }
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(139,92,246,0.4);
+        }
+        .btn-login:active { transform: translateY(0); }
+        .btn-login.loading {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 28px 0;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+        .divider span { color: var(--dim); font-size: 13px; }
+        .register-link {
+            text-align: center;
+            color: var(--muted);
+            font-size: 14px;
+        }
+        .register-link a {
+            color: var(--purple);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .register-link a:hover { text-decoration: underline; }
+        .error-box {
+            background: rgba(239,68,68,0.12);
+            border: 1px solid rgba(239,68,68,0.35);
+            color: #fca5a5;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .left-panel { width: 100%; padding: 40px 24px; min-height: 280px; }
+            .brand-name { font-size: 32px; }
+            .brand-icon { font-size: 52px; }
+            .features { display: none; }
+            .right-panel { width: 100%; padding: 32px 24px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="left-panel">
+        <div class="brand">
+            <span class="brand-icon">💰</span>
+            <div class="brand-name">HostelBuddy</div>
+            <div class="brand-tagline">Your smart expense companion</div>
+        </div>
+        <div class="features">
+            <div class="feature-item">
+                <div class="feature-icon">📊</div>
+                <div class="feature-text">
+                    <h4>Visual Analytics</h4>
+                    <p>Charts and insights for your spending</p>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">🎯</div>
+                <div class="feature-text">
+                    <h4>Budget Tracking</h4>
+                    <p>Set limits and stay on track</p>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">🤝</div>
+                <div class="feature-text">
+                    <h4>Debt Splitter</h4>
+                    <p>Split expenses with roommates</p>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">🌐</div>
+                <div class="feature-text">
+                    <h4>Any Device</h4>
+                    <p>Access your data from anywhere</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="right-panel">
+        <div class="form-card">
+            <h1 class="form-title">Welcome back 👋</h1>
+            <p class="form-subtitle">Sign in to your HostelBuddy account</p>
+            <div class="error-box" id="errorBox"></div>
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="username" placeholder="Enter your username" autocomplete="username" autofocus>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password">
+            </div>
+            <button class="btn-login" id="loginBtn">Sign In →</button>
+            <div class="divider"><span>New here?</span></div>
+            <p class="register-link">Don't have an account? <a href="register.html">Create one for free</a></p>
+        </div>
+    </div>
+
+    <script>
+        // Redirect if already logged in
+        if (localStorage.getItem('hb_token')) {
+            window.location.href = '/';
+        }
+
+        const errorBox = document.getElementById('errorBox');
+        const loginBtn = document.getElementById('loginBtn');
+
+        function showError(msg) {
+            errorBox.textContent = msg;
+            errorBox.style.display = 'block';
+        }
+
+        async function handleLogin() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            if (!username || !password) { showError('Please fill in all fields.'); return; }
+            loginBtn.textContent = 'Signing in...';
+            loginBtn.classList.add('loading');
+            errorBox.style.display = 'none';
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
+                if (!res.ok) { showError(data.error || 'Login failed.'); loginBtn.textContent = 'Sign In →'; loginBtn.classList.remove('loading'); return; }
+                localStorage.setItem('hb_token', data.token);
+                localStorage.setItem('hb_username', data.username);
+                window.location.href = '/';
+            } catch (e) {
+                showError('Cannot reach server. Is it running?');
+                loginBtn.textContent = 'Sign In →';
+                loginBtn.classList.remove('loading');
+            }
+        }
+
+        loginBtn.addEventListener('click', handleLogin);
+        document.getElementById('password').addEventListener('keydown', (e) => { if (e.key === 'Enter') handleLogin(); });
+        document.getElementById('username').addEventListener('keydown', (e) => { if (e.key === 'Enter') handleLogin(); });
+    </script>
+</body>
+</html>

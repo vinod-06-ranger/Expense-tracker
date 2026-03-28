@@ -1,0 +1,38 @@
+{
+  "users": [
+    {
+      "id": "1774723731621",
+      "username": "budgettest",
+      "passwordHash": "bc41e97ce35999427a160acc444e00e59c756439a3ec9c6a958ab2ce16414811"
+    }
+  ],
+  "sessions": [
+    {
+      "token": "cb670a66395f0310b45f3a838124ae00f8849504ae94a0ce76d00fe09a1aac5d",
+      "userId": "1774723731621",
+      "username": "budgettest",
+      "expires": "2026-04-27T18:58:25.426Z"
+    }
+  ],
+  "expenses": {
+    "1774723731621": [
+      {
+        "id": "1774724100140",
+        "amount": 1000,
+        "description": "Big Purchase",
+        "category": "transport",
+        "date": "2026-03-28",
+        "note": ""
+      }
+    ]
+  },
+  "budgets": {
+    "1774723731621": {
+      "monthly": 10000,
+      "categories": {}
+    }
+  },
+  "debts": {
+    "1774723731621": []
+  }
+}

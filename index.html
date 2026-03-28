@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Track your hostel expenses easily with HostelBuddy">
+    <meta name="theme-color" content="#8b5cf6">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2489/2489756.png">
+    <title>HostelBuddy - Expense Tracker for Hostlers</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Auth guard -->
+    <script>
+        if (!localStorage.getItem('hb_token')) {
+            window.location.href = '/login.html';
+        }
+    </script>
+
+    <!-- Main App -->
+    <div class="app-container" id="appContainer">
+        <aside class="sidebar" id="sidebar">
+            <div class="logo">
+                <div class="logo-icon">💰</div>
+                <span class="logo-text">HostelBuddy</span>
+            </div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-section="dashboard">📊 Dashboard</a>
+                <a href="#" class="nav-item" data-section="expenses">💸 Expenses</a>
+                <a href="#" class="nav-item" data-section="budget">🎯 Budget</a>
+                <a href="#" class="nav-item" data-section="analytics">📈 Analytics</a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-profile" data-section="profile" style="cursor: pointer;">
+                    <div class="avatar">H</div>
+                    <div class="user-info">
+                        <span class="user-name">Hostler</span>
+                        <span class="user-status">Room 404</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <button class="menu-toggle" id="menuToggle">☰</button>
+                    <h1 class="page-title" id="pageTitle">Dashboard</h1>
+                </div>
+                <div class="header-right">
+                    <span class="date-display" id="currentDate"></span>
+                    <div class="notification-wrapper">
+                        <button class="notif-btn" id="notifBtn">
+                            🔔
+                            <span class="notif-badge hidden" id="notifBadge">0</span>
+                        </button>
+                        <div class="notif-dropdown hidden" id="notifDropdown">
+                            <div class="notif-header">
+                                <span>Notifications</span>
+                                <button class="notif-clear" id="clearNotifs">Clear all</button>
+                            </div>
+                            <div class="notif-list" id="notifList">
+                                <p class="notif-empty">No new notifications</p>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn-primary" id="addExpenseBtn">+ Add Expense</button>
+                    <button class="btn-secondary" id="logoutBtn" title="Logout">⏻</button>
+                </div>
+            </header>
+
+            <section class="section" id="dashboard">
+                <div class="stats-grid">
+                    <div class="stat-card gradient-purple">
+                        <span class="stat-label">Total Spent</span>
+                        <span class="stat-value" id="totalSpent">₹0</span>
+                        <span class="stat-change">This Month</span>
+                    </div>
+                    <div class="stat-card gradient-blue" id="budgetLeftCard">
+                        <span class="stat-label">Budget Left</span>
+                        <span class="stat-value" id="budgetLeft">₹0</span>
+                        <span class="stat-change" id="budgetPercent">0% remaining</span>
+                    </div>
+                    <div class="stat-card gradient-green">
+                        <span class="stat-label">Transactions</span>
+                        <span class="stat-value" id="transactionCount">0</span>
+                        <span class="stat-change">This month</span>
+                    </div>
+                    <div class="stat-card gradient-orange">
+                        <span class="stat-label">Daily Average</span>
+                        <span class="stat-value" id="dailyAverage">₹0</span>
+                        <span class="stat-change">Per day</span>
+                    </div>
+                </div>
+                <div class="charts-row">
+                    <div class="card chart-card">
+                        <h3>Spending by Category</h3>
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                    <div class="card chart-card">
+                        <h3>Weekly Trend</h3>
+                        <canvas id="weeklyChart"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Recent Transactions</h3>
+                        <a href="#" class="view-all" data-section="expenses">View All</a>
+                    </div>
+                    <div class="transactions-list" id="recentTransactions"></div>
+                </div>
+            </section>
+
+            <section class="section hidden" id="expenses">
+                <div class="filter-bar">
+                    <input type="text" class="search-box" placeholder="Search expenses..." id="searchExpense">
+                    <select class="filter-select" id="categoryFilter">
+                        <option value="all">All Categories</option>
+                        <option value="food">🍔 Food</option>
+                        <option value="transport">🚌 Transport</option>
+                        <option value="utilities">💡 Utilities</option>
+                        <option value="entertainment">🎮 Entertainment</option>
+                        <option value="shopping">🛒 Shopping</option>
+                        <option value="health">💊 Health</option>
+                        <option value="other">📦 Other</option>
+                    </select>
+                    <button class="btn-primary" id="exportExcelBtn">📊 Export to Excel</button>
+                </div>
+                <div class="card">
+                    <table class="expenses-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Amount</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expensesTableBody"></tbody>
+                    </table>
+                    <div class="empty-state hidden" id="emptyExpenses">
+                        <h4>No expenses yet</h4>
+                        <p>Start adding your expenses to track your spending</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section hidden" id="budget">
+                <div class="card budget-main-card">
+                    <div class="card-header">
+                        <h3>Monthly Budget</h3>
+                        <button class="btn-secondary" id="editBudgetBtn">✏️ Edit Budget</button>
+                    </div>
+                    <div class="budget-overview">
+                        <div class="budget-circle">
+                            <svg viewBox="0 0 120 120" class="progress-ring">
+                                <circle class="progress-ring-bg" cx="60" cy="60" r="52" />
+                                <circle class="progress-ring-fill" cx="60" cy="60" r="52" id="budgetRing" />
+                            </svg>
+                            <div class="budget-center">
+                                <span class="budget-spent" id="budgetSpentPercent">0%</span>
+                                <span class="budget-label">Spent</span>
+                            </div>
+                        </div>
+                        <div class="budget-details">
+                            <div class="budget-item"><span>Total Budget</span><span id="totalBudget">₹0</span></div>
+                            <div class="budget-item"><span>Spent</span><span class="text-red" id="budgetSpentAmount">₹0</span></div>
+                            <div class="budget-item"><span>Remaining</span><span class="text-green" id="budgetRemainingAmount">₹0</span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Category-wise Budget</h3>
+                    <div class="category-budget-list" id="categoryBudgetList"></div>
+                </div>
+            </section>
+
+            <section class="section hidden" id="analytics">
+                <div class="analytics-grid">
+                    <div class="card chart-card">
+                        <h3>Monthly Comparison</h3>
+                        <div class="chart-container"><canvas id="monthlyChart"></canvas></div>
+                    </div>
+                    <div class="card">
+                        <h3>Top Categories</h3>
+                        <div id="topCategories"></div>
+                    </div>
+                    <div class="card full-width">
+                        <h3>Spending Insights</h3>
+                        <div id="insightsGrid"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section hidden" id="profile">
+                <div class="profile-grid">
+                    <div class="card profile-card">
+                        <div class="profile-header">
+                            <div class="profile-avatar" id="profileAvatar">H</div>
+                            <div class="profile-name-section">
+                                <h2 id="profileDisplayName">Hostler</h2>
+                                <p id="profileDisplayRoom">Room 404</p>
+                            </div>
+                            <button class="btn-secondary" id="editProfileBtn">✏️ Edit</button>
+                        </div>
+                        <div class="profile-form hidden" id="profileForm">
+                            <div class="form-group">
+                                <label>Name</label>
+                                <input type="text" id="profileName" placeholder="Your name">
+                            </div>
+                            <div class="form-group">
+                                <label>Room Number</label>
+                                <input type="text" id="profileRoom" placeholder="e.g., Room 404">
+                            </div>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" id="profileEmail" placeholder="your@email.com">
+                            </div>
+                            <div class="form-group">
+                                <label>Phone</label>
+                                <input type="tel" id="profilePhone" placeholder="+91 98765 43210">
+                            </div>
+                            <div class="form-actions">
+                                <button class="btn-secondary" id="cancelProfileBtn">Cancel</button>
+                                <button class="btn-primary" id="saveProfileBtn">Save Profile</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="debt-cards">
+                        <div class="debt-card owe-card">
+                            <span class="debt-label">I Owe</span>
+                            <span class="debt-amount owe-amount" id="totalIOwe">₹0</span>
+                        </div>
+                        <div class="debt-card owed-card">
+                            <span class="debt-label">Owed to Me</span>
+                            <span class="debt-amount owed-amount" id="totalOwedToMe">₹0</span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Debt Tracker</h3>
+                            <button class="btn-primary" id="addDebtBtn">+ Add Entry</button>
+                        </div>
+                        <div class="debt-list" id="debtList">
+                            <div class="empty-state">
+                                <h4>No debts recorded</h4>
+                                <p>Track money you owe or are owed</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Expense Modal -->
+    <div class="modal-overlay" id="expenseModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add Expense</h2><button class="modal-close" id="closeModal">×</button>
+            </div>
+            <form id="expenseForm">
+                <input type="hidden" id="expenseId">
+                <div class="form-group"><label>Amount (₹)</label><input type="number" id="expenseAmount" required min="0"></div>
+                <div class="form-group"><label>Description</label><input type="text" id="expenseDescription" required></div>
+                <div class="form-group"><label>Category</label>
+                    <select id="expenseCategory" required>
+                        <option value="">Select</option>
+                        <option value="food">🍔 Food</option>
+                        <option value="transport">🚌 Transport</option>
+                        <option value="utilities">💡 Utilities</option>
+                        <option value="entertainment">🎮 Entertainment</option>
+                        <option value="shopping">🛒 Shopping</option>
+                        <option value="health">💊 Health</option>
+                        <option value="other">📦 Other</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Date</label><input type="date" id="expenseDate" required></div>
+                <div class="form-group">
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="splitExpense">
+                        <span>Split this expense with others?</span>
+                    </label>
+                    <div class="split-options" id="splitOptions">
+                        <div class="form-group">
+                            <label>Split between (number of people including you)</label>
+                            <input type="number" id="splitCount" value="2" min="2">
+                        </div>
+                        <div class="form-group">
+                            <label>Person to track (who owes you?)</label>
+                            <input type="text" id="splitPerson" placeholder="e.g., Roommate">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group"><label>Note</label><textarea id="expenseNote" rows="2"></textarea></div>
+                <div class="form-actions"><button type="button" class="btn-secondary" id="cancelExpense">Cancel</button><button type="submit" class="btn-primary">Save</button></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Budget Modal -->
+    <div class="modal-overlay" id="budgetModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Set Budget</h2><button class="modal-close" id="closeBudgetModal">×</button>
+            </div>
+            <form id="budgetForm">
+                <div class="form-group"><label>Monthly Budget (₹)</label><input type="number" id="monthlyBudget" required min="0"></div>
+                <div class="category-limits">
+                    <h4>Category Limits</h4>
+                    <div class="limit-row"><label>🍔 Food</label><input type="number" id="budgetFood" min="0"></div>
+                    <div class="limit-row"><label>🚌 Transport</label><input type="number" id="budgetTransport" min="0"></div>
+                    <div class="limit-row"><label>💡 Utilities</label><input type="number" id="budgetUtilities" min="0"></div>
+                    <div class="limit-row"><label>🎮 Entertainment</label><input type="number" id="budgetEntertainment" min="0"></div>
+                    <div class="limit-row"><label>🛒 Shopping</label><input type="number" id="budgetShopping" min="0"></div>
+                    <div class="limit-row"><label>💊 Health</label><input type="number" id="budgetHealth" min="0"></div>
+                    <div class="limit-row"><label>📦 Other</label><input type="number" id="budgetOther" min="0"></div>
+                </div>
+                <div class="form-actions"><button type="button" class="btn-secondary" id="cancelBudget">Cancel</button><button type="submit" class="btn-primary">Save</button></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Debt Modal -->
+    <div class="modal-overlay" id="debtModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="debtModalTitle">Add Debt Entry</h2>
+                <button class="modal-close" id="closeDebtModal">×</button>
+            </div>
+            <form id="debtForm">
+                <input type="hidden" id="debtId">
+                <div class="form-group">
+                    <label>Person Name</label>
+                    <input type="text" id="debtPerson" required placeholder="Who owes or is owed?">
+                </div>
+                <div class="form-group">
+                    <label>Amount (₹)</label>
+                    <input type="number" id="debtAmount" required min="0">
+                </div>
+                <div class="form-group">
+                    <label>Type</label>
+                    <select id="debtType" required>
+                        <option value="">Select type</option>
+                        <option value="owe">I Owe (I borrowed)</option>
+                        <option value="owed">Owed to Me (I lent)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <input type="text" id="debtDescription" placeholder="What for?">
+                </div>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" id="debtDate" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" id="cancelDebt">Cancel</button>
+                    <button type="submit" class="btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Chatbot Widget -->
+    <div class="chatbot-widget" id="chatbotWidget">
+        <div class="chatbot-header">
+            <span>🤖 BuddyBot</span>
+            <button class="chatbot-close" id="chatbotClose">×</button>
+        </div>
+        <div class="chatbot-messages" id="chatbotMessages">
+            <div class="chat-msg bot-msg">Hi! I'm BuddyBot 👋 Ask me things like:<br>"What's my budget?"<br>"How much did I spend?"<br>"Top category?"</div>
+        </div>
+        <div class="chatbot-input-row">
+            <input type="text" class="chatbot-input" id="chatbotInput" placeholder="Ask me anything...">
+            <button class="chatbot-send" id="chatbotSend">➤</button>
+        </div>
+    </div>
+    <button class="chatbot-toggle" id="chatbotToggle">🤖</button>
+
+    <div class="toast-container" id="toastContainer"></div>
+    <button class="fab" id="fabAddExpense">+</button>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script src="app.js?v=2"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('Service Worker registered!'))
+                    .catch(err => console.log('Service Worker registration failed:', err));
+            });
+        }
+    </script>
+</body>
+
+</html>
