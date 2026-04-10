@@ -4,6 +4,11 @@
       "id": "1774723731621",
       "username": "budgettest",
       "passwordHash": "bc41e97ce35999427a160acc444e00e59c756439a3ec9c6a958ab2ce16414811"
+    },
+    {
+      "id": "1774726345404",
+      "username": "funnyranger06",
+      "passwordHash": "1b87663f42306e06774d521c907192e0294b703973a06105095b1437fb870954"
     }
   ],
   "sessions": [
@@ -12,6 +17,12 @@
       "userId": "1774723731621",
       "username": "budgettest",
       "expires": "2026-04-27T18:58:25.426Z"
+    },
+    {
+      "token": "406730ab9e021b81401e0d5ff87ed1826a28988b36f5fdb9a5255ed3ac1751c4",
+      "userId": "1774726345404",
+      "username": "funnyranger06",
+      "expires": "2026-04-28T13:54:25.211Z"
     }
   ],
   "expenses": {
@@ -24,15 +35,79 @@
         "date": "2026-03-28",
         "note": ""
       }
+    ],
+    "1774726345404": [
+      {
+        "id": "1774792576829",
+        "amount": 1000,
+        "description": "party",
+        "category": "entertainment",
+        "date": "2026-03-30",
+        "note": ""
+      },
+      {
+        "id": "1774792498068",
+        "amount": 7000,
+        "description": "screen",
+        "category": "utilities",
+        "date": "2026-03-31",
+        "note": ""
+      },
+      {
+        "id": "1774727037676",
+        "amount": 150,
+        "description": "soa[",
+        "category": "utilities",
+        "date": "2026-04-01",
+        "note": ""
+      },
+      {
+        "id": "1774726976506",
+        "amount": 900,
+        "description": "gym",
+        "category": "health",
+        "date": "2026-03-25",
+        "note": ""
+      },
+      {
+        "id": "1774726951546",
+        "amount": 80,
+        "description": "sugarcane juice",
+        "category": "food",
+        "date": "2026-03-27",
+        "note": ""
+      },
+      {
+        "id": "1774726925184",
+        "amount": 1000,
+        "description": "wonderla",
+        "category": "transport",
+        "date": "2026-03-28",
+        "note": ""
+      }
     ]
   },
   "budgets": {
     "1774723731621": {
       "monthly": 10000,
       "categories": {}
+    },
+    "1774726345404": {
+      "monthly": 10000,
+      "categories": {}
     }
   },
   "debts": {
-    "1774723731621": []
+    "1774723731621": [],
+    "1774726345404": [
+      {
+        "id": "1774727100959",
+        "person": "lokesh",
+        "amount": 500,
+        "type": "owed",
+        "description": "",
+        "date": "2026-03-20"
+      }
+    ]
   }
 }

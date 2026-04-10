@@ -1,42 +1,69 @@
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
-const fs = require('fs');
-const crypto = require('crypto');
+require('dotenv').config();
+const express    = require('express');
+const cors       = require('cors');
+const path       = require('path');
+const crypto     = require('crypto');
+const bcrypt     = require('bcryptjs');
+const Database   = require('better-sqlite3');
 
-const app = express();
-const PORT = process.env.PORT || 3000;
-const DATA_FILE = path.join(__dirname, 'data.json');
+const app      = express();
+const PORT     = process.env.PORT || 3000;
+const DB_FILE  = path.join(__dirname, 'hostelbuddy.db');
+
+// ── SQLite Setup ──────────────────────────────────────────────
+
+const db = new Database(DB_FILE);
+
+db.exec(`
+    PRAGMA journal_mode = WAL;
+
+    CREATE TABLE IF NOT EXISTS users (
+        id            TEXT PRIMARY KEY,
+        username      TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS sessions (
+        token    TEXT PRIMARY KEY,
+        user_id  TEXT NOT NULL,
+        username TEXT NOT NULL,
+        expires  TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS expenses (
+        id          TEXT PRIMARY KEY,
+        user_id     TEXT NOT NULL,
+        amount      REAL NOT NULL,
+        description TEXT,
+        category    TEXT,
+        date        TEXT,
+        note        TEXT DEFAULT ''
+    );
+
+    CREATE TABLE IF NOT EXISTS budgets (
+        user_id    TEXT PRIMARY KEY,
+        monthly    REAL DEFAULT 10000,
+        categories TEXT DEFAULT '{}'
+    );
+
+    CREATE TABLE IF NOT EXISTS debts (
+        id          TEXT PRIMARY KEY,
+        user_id     TEXT NOT NULL,
+        person      TEXT,
+        amount      REAL,
+        type        TEXT,
+        description TEXT DEFAULT '',
+        date        TEXT
+    );
+`);
+
+// ── Middleware ────────────────────────────────────────────────
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
-// ── Data Helpers ─────────────────────────────────────────────
-
-function loadData() {
-    if (!fs.existsSync(DATA_FILE)) {
-        const defaultData = { users: [], sessions: [], expenses: {}, budgets: {}, debts: {} };
-        fs.writeFileSync(DATA_FILE, JSON.stringify(defaultData, null, 2));
-        return defaultData;
-    }
-    const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
-    // Migrate old format if needed
-    if (!data.users) data.users = [];
-    if (!data.sessions) data.sessions = [];
-    if (!data.expenses || Array.isArray(data.expenses)) data.expenses = {};
-    if (!data.budgets || Array.isArray(data.budgets)) data.budgets = {};
-    if (!data.debts || Array.isArray(data.debts)) data.debts = {};
-    return data;
-}
-
-function saveData(data) {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-}
-
-function hashPassword(password) {
-    return crypto.createHash('sha256').update(password + 'hostelbuddy_salt').digest('hex');
-}
+// ── Helpers ───────────────────────────────────────────────────
 
 function generateToken() {
     return crypto.randomBytes(32).toString('hex');
@@ -48,11 +75,13 @@ function requireAuth(req, res, next) {
     const token = req.headers['authorization']?.replace('Bearer ', '');
     if (!token) return res.status(401).json({ error: 'No token provided' });
 
-    const data = loadData();
-    const session = data.sessions.find(s => s.token === token && new Date(s.expires) > new Date());
+    const session = db.prepare(
+        'SELECT * FROM sessions WHERE token = ? AND expires > ?'
+    ).get(token, new Date().toISOString());
+
     if (!session) return res.status(401).json({ error: 'Invalid or expired token' });
 
-    req.userId = session.userId;
+    req.userId   = session.user_id;
     req.username = session.username;
     next();
 }
@@ -62,26 +91,31 @@ function requireAuth(req, res, next) {
 app.post('/api/register', (req, res) => {
     try {
         const { username, password } = req.body;
-        if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
+        if (!username || !password)
+            return res.status(400).json({ error: 'Username and password required' });
 
-        const data = loadData();
-        if (data.users.find(u => u.username === username.toLowerCase())) {
+        const existing = db.prepare('SELECT id FROM users WHERE username = ?')
+            .get(username.toLowerCase());
+        if (existing)
             return res.status(409).json({ error: 'Username already taken' });
-        }
 
-        const userId = Date.now().toString();
-        data.users.push({ id: userId, username: username.toLowerCase(), passwordHash: hashPassword(password) });
+        const userId      = Date.now().toString();
+        const passwordHash = bcrypt.hashSync(password, 10);   // Bug 1 fix: bcrypt
 
-        // Default budget for new user
-        data.budgets[userId] = { monthly: 10000, categories: {} };
-        data.expenses[userId] = [];
-        data.debts[userId] = [];
-        saveData(data);
+        db.prepare(
+            'INSERT INTO users (id, username, password_hash) VALUES (?, ?, ?)'
+        ).run(userId, username.toLowerCase(), passwordHash);
 
-        const token = generateToken();
-        const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(); // 30 days
-        data.sessions.push({ token, userId, username: username.toLowerCase(), expires });
-        saveData(data);
+        // Default budget row
+        db.prepare(
+            'INSERT INTO budgets (user_id, monthly, categories) VALUES (?, ?, ?)'
+        ).run(userId, 10000, '{}');
+
+        const token   = generateToken();
+        const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+        db.prepare(
+            'INSERT INTO sessions (token, user_id, username, expires) VALUES (?, ?, ?, ?)'
+        ).run(token, userId, username.toLowerCase(), expires);
 
         res.status(201).json({ token, username: username.toLowerCase(), userId });
     } catch (error) {
@@ -92,16 +126,20 @@ app.post('/api/register', (req, res) => {
 app.post('/api/login', (req, res) => {
     try {
         const { username, password } = req.body;
-        const data = loadData();
-        const user = data.users.find(u => u.username === username?.toLowerCase() && u.passwordHash === hashPassword(password));
-        if (!user) return res.status(401).json({ error: 'Invalid username or password' });
+        const user = db.prepare('SELECT * FROM users WHERE username = ?')
+            .get(username?.toLowerCase());
 
-        const token = generateToken();
+        if (!user || !bcrypt.compareSync(password, user.password_hash))   // Bug 1 fix: bcrypt compare
+            return res.status(401).json({ error: 'Invalid username or password' });
+
+        const token   = generateToken();
         const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
-        // Remove old sessions for this user
-        data.sessions = data.sessions.filter(s => s.userId !== user.id);
-        data.sessions.push({ token, userId: user.id, username: user.username, expires });
-        saveData(data);
+
+        // Remove old sessions for this user, then insert new one
+        db.prepare('DELETE FROM sessions WHERE user_id = ?').run(user.id);
+        db.prepare(
+            'INSERT INTO sessions (token, user_id, username, expires) VALUES (?, ?, ?, ?)'
+        ).run(token, user.id, user.username, expires);
 
         res.json({ token, username: user.username, userId: user.id });
     } catch (error) {
@@ -110,91 +148,157 @@ app.post('/api/login', (req, res) => {
 });
 
 app.post('/api/logout', requireAuth, (req, res) => {
-    const data = loadData();
     const token = req.headers['authorization']?.replace('Bearer ', '');
-    data.sessions = data.sessions.filter(s => s.token !== token);
-    saveData(data);
+    db.prepare('DELETE FROM sessions WHERE token = ?').run(token);
     res.json({ success: true });
 });
 
 // ── Expense Routes ────────────────────────────────────────────
 
 app.get('/api/expenses', requireAuth, (req, res) => {
-    const data = loadData();
-    res.json(data.expenses[req.userId] || []);
+    const rows = db.prepare(
+        'SELECT * FROM expenses WHERE user_id = ? ORDER BY date DESC'
+    ).all(req.userId);
+    res.json(rows);
 });
 
 app.post('/api/expenses', requireAuth, (req, res) => {
-    const data = loadData();
-    if (!data.expenses[req.userId]) data.expenses[req.userId] = [];
-    data.expenses[req.userId].unshift(req.body);
-    saveData(data);
+    const { id, amount, description, category, date, note } = req.body;
+    db.prepare(
+        'INSERT INTO expenses (id, user_id, amount, description, category, date, note) VALUES (?, ?, ?, ?, ?, ?, ?)'
+    ).run(id, req.userId, amount, description, category, date, note || '');
     res.status(201).json({ success: true });
 });
 
 app.put('/api/expenses/:id', requireAuth, (req, res) => {
-    const data = loadData();
-    const list = data.expenses[req.userId] || [];
-    const idx = list.findIndex(e => e.id === req.params.id);
-    if (idx !== -1) { list[idx] = req.body; saveData(data); res.json({ success: true }); }
-    else res.status(404).json({ error: 'Not found' });
+    const { amount, description, category, date, note } = req.body;
+    const result = db.prepare(
+        'UPDATE expenses SET amount = ?, description = ?, category = ?, date = ?, note = ? WHERE id = ? AND user_id = ?'
+    ).run(amount, description, category, date, note || '', req.params.id, req.userId);
+    if (result.changes === 0) return res.status(404).json({ error: 'Not found' });
+    res.json({ success: true });
 });
 
 app.delete('/api/expenses/:id', requireAuth, (req, res) => {
-    const data = loadData();
-    data.expenses[req.userId] = (data.expenses[req.userId] || []).filter(e => e.id !== req.params.id);
-    saveData(data);
+    db.prepare('DELETE FROM expenses WHERE id = ? AND user_id = ?')
+        .run(req.params.id, req.userId);
     res.json({ success: true });
 });
 
 // ── Budget Routes ─────────────────────────────────────────────
 
 app.get('/api/budget', requireAuth, (req, res) => {
-    const data = loadData();
-    res.json(data.budgets[req.userId] || { monthly: 10000, categories: {} });
+    const row = db.prepare('SELECT * FROM budgets WHERE user_id = ?').get(req.userId);
+    if (!row) return res.json({ monthly: 10000, categories: {} });
+    res.json({ monthly: row.monthly, categories: JSON.parse(row.categories || '{}') });
 });
 
 app.put('/api/budget', requireAuth, (req, res) => {
-    const data = loadData();
-    data.budgets[req.userId] = req.body;
-    saveData(data);
+    const { monthly, categories } = req.body;
+    db.prepare(
+        'INSERT OR REPLACE INTO budgets (user_id, monthly, categories) VALUES (?, ?, ?)'
+    ).run(req.userId, monthly, JSON.stringify(categories || {}));
     res.json({ success: true });
 });
 
 // ── Debt Routes ───────────────────────────────────────────────
 
 app.get('/api/debts', requireAuth, (req, res) => {
-    const data = loadData();
-    res.json(data.debts[req.userId] || []);
+    const rows = db.prepare(
+        'SELECT * FROM debts WHERE user_id = ? ORDER BY date DESC'
+    ).all(req.userId);
+    res.json(rows);
 });
 
 app.post('/api/debts', requireAuth, (req, res) => {
-    const data = loadData();
-    if (!data.debts[req.userId]) data.debts[req.userId] = [];
-    data.debts[req.userId].unshift(req.body);
-    saveData(data);
+    const { id, person, amount, type, description, date } = req.body;
+    db.prepare(
+        'INSERT INTO debts (id, user_id, person, amount, type, description, date) VALUES (?, ?, ?, ?, ?, ?, ?)'
+    ).run(id, req.userId, person, amount, type, description || '', date);
     res.status(201).json({ success: true });
 });
 
 app.put('/api/debts/:id', requireAuth, (req, res) => {
-    const data = loadData();
-    const list = data.debts[req.userId] || [];
-    const idx = list.findIndex(d => d.id === req.params.id);
-    if (idx !== -1) { list[idx] = req.body; saveData(data); res.json({ success: true }); }
-    else res.status(404).json({ error: 'Not found' });
-});
-
-app.delete('/api/debts/:id', requireAuth, (req, res) => {
-    const data = loadData();
-    data.debts[req.userId] = (data.debts[req.userId] || []).filter(d => d.id !== req.params.id);
-    saveData(data);
+    const { person, amount, type, description, date } = req.body;
+    const result = db.prepare(
+        'UPDATE debts SET person = ?, amount = ?, type = ?, description = ?, date = ? WHERE id = ? AND user_id = ?'
+    ).run(person, amount, type, description || '', date, req.params.id, req.userId);
+    if (result.changes === 0) return res.status(404).json({ error: 'Not found' });
     res.json({ success: true });
 });
 
-app.get('/login.html', (req, res) => res.sendFile(path.join(__dirname, 'login.html')));
+app.delete('/api/debts/:id', requireAuth, (req, res) => {
+    db.prepare('DELETE FROM debts WHERE id = ? AND user_id = ?')
+        .run(req.params.id, req.userId);
+    res.json({ success: true });
+});
+
+// ── Gemini AI Chat ────────────────────────────────────────────
+
+app.post('/api/chat', requireAuth, async (req, res) => {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey || apiKey === 'your_gemini_api_key_here') {
+        return res.status(503).json({ error: 'Gemini API key not configured. Add it to your .env file.' });
+    }
+
+    const { message, context } = req.body;
+    if (!message) return res.status(400).json({ error: 'No message provided' });
+
+    const today = new Date().toLocaleDateString('en-IN', { dateStyle: 'long' });
+    const systemPrompt = `You are BuddyBot, a friendly AI financial assistant inside the HostelBuddy expense tracker app.
+Today is ${today}.
+
+Here is the user's current financial data:
+- Monthly Budget: ₹${context?.budget?.monthly ?? 'N/A'}
+- Total Spent This Month: ₹${context?.totalSpent ?? 0}
+- Budget Remaining: ₹${context?.budgetLeft ?? 0}
+- Number of Transactions: ${context?.transactionCount ?? 0}
+- Daily Average Spending: ₹${context?.dailyAvg ?? 0}
+
+Category-wise spending this month:
+${context?.categoryBreakdown ? Object.entries(context.categoryBreakdown).map(([cat, amt]) => `  - ${cat}: ₹${amt}`).join('\n') : '  No data'}
+
+Recent transactions:
+${context?.recentExpenses?.slice(0, 5).map(e => `  - ${e.date}: ${e.description} (${e.category}) — ₹${e.amount}`).join('\n') || '  No recent transactions'}
+
+Debts:
+- You owe: ₹${context?.totalOwe ?? 0}
+- Owed to you: ₹${context?.totalOwed ?? 0}
+
+Please answer the user's question in 2-3 short sentences. Be specific with rupee amounts from their data. Use a friendly, encouraging tone. Keep it concise.`;
+
+    try {
+        const geminiRes = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: `${systemPrompt}\n\nUser: ${message}` }] }],
+                    generationConfig: { maxOutputTokens: 256, temperature: 0.7 }
+                })
+            }
+        );
+        const data = await geminiRes.json();
+        if (!geminiRes.ok) {
+            console.error('Gemini error:', data);
+            return res.status(502).json({ error: data?.error?.message || 'Gemini API error' });
+        }
+        const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, I could not generate a response.';
+        res.json({ reply });
+    } catch (err) {
+        console.error('Chat error:', err);
+        res.status(500).json({ error: 'Failed to reach Gemini API.' });
+    }
+});
+
+// ── Static Pages ──────────────────────────────────────────────
+
+app.get('/login.html',    (req, res) => res.sendFile(path.join(__dirname, 'login.html')));
 app.get('/register.html', (req, res) => res.sendFile(path.join(__dirname, 'register.html')));
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+app.get('/',              (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 app.listen(PORT, () => {
     console.log(`🚀 HostelBuddy running at http://localhost:${PORT}`);
+    console.log(`📦 Database: ${DB_FILE}`);
 });
