@@ -1,5 +1,6 @@
 node_modules/
 expenses.db
+hostelbuddy.db
 *.db-shm
 *.db-wal
 .env
