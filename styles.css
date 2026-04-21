@@ -268,7 +268,6 @@ body {
     }
 }
 
-<<<<<<< HEAD
 .card,
 .stat-card {
     animation: slideUp 0.5s ease backwards;
@@ -350,12 +349,10 @@ body {
     width: auto;
 }
 
-=======
->>>>>>> 14a969111c9f3609d8feb846f2bbd368cab6a688
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 24px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
     margin-bottom: 32px;
 }
 
@@ -1240,7 +1237,6 @@ body {
         flex-direction: column;
         text-align: center;
     }
-<<<<<<< HEAD
 }
 
 /* === Auth Screen === */
@@ -1654,10 +1650,12 @@ body {
     overflow: hidden;
 }
 
-/* When .hidden is added by JS the !important above hides it */
+/* ── Utilities ─────────────────────────────────────────────── */
+.hidden {
+    display: none !important;
+}
 
-/* ── Confirm Modal (Bug 3 fix) ─────────────────────────────── */
-
+/* ── Confirm Modal ──────────────────────────────────────────── */
 .confirm-modal {
     max-width: 380px;
     text-align: center;
@@ -1668,13 +1666,6 @@ body {
     font-size: 48px;
     margin-bottom: 16px;
     display: block;
-    animation: pulse-icon 0.4s ease;
-}
-
-@keyframes pulse-icon {
-    0%   { transform: scale(0.5); opacity: 0; }
-    70%  { transform: scale(1.1); }
-    100% { transform: scale(1);   opacity: 1; }
 }
 
 .confirm-modal h3 {
@@ -1705,6 +1696,63 @@ body {
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
 }
-=======
+
+/* ΓöÇΓöÇ Confirm Modal (Bug 3 fix) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
+
+.confirm-modal {
+    max-width: 380px;
+    text-align: center;
+    padding: 40px 32px;
 }
->>>>>>> 14a969111c9f3609d8feb846f2bbd368cab6a688
+
+.confirm-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    display: block;
+    animation: pulse-icon 0.4s ease;
+}
+
+@keyframes pulse-icon {
+    0% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+
+    70% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.confirm-modal h3 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.confirm-modal p {
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: var(--border-radius-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 14px;
+}
+
+.btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+}

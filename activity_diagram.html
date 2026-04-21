@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HostelBuddy – Activity Diagram</title>
+    <style>
+        body {
+            background: #ffffff;
+            font-family: "Segoe UI", Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+        }
+
+        h1 {
+            color: #000;
+            margin-bottom: 20px;
+        }
+
+        svg {
+            width: 100%;
+            max-width: 700px;
+        }
+
+        .box {
+            fill: #ffffff;
+            stroke: #000000;
+            stroke-width: 1.5;
+        }
+
+        .arrow {
+            stroke: #000000;
+            stroke-width: 1.2;
+            marker-end: url(#arrow);
+        }
+
+        text {
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Add Expense – Activity Diagram</h1>
+
+    <svg viewBox="0 0 700 700">
+
+        <defs>
+            <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L9,3 z" fill="#000" />
+            </marker>
+        </defs>
+
+        <!-- Start -->
+        <circle cx="350" cy="50" r="10" fill="#000" />
+
+        <!-- Step 1 -->
+        <rect x="260" y="100" width="180" height="40" class="box" />
+        <text x="350" y="125" text-anchor="middle">Enter Expense Details</text>
+
+        <!-- Step 2 -->
+        <rect x="260" y="180" width="180" height="40" class="box" />
+        <text x="350" y="205" text-anchor="middle">Validate Input</text>
+
+        <!-- Decision -->
+        <polygon points="350,260 390,300 350,340 310,300" class="box" />
+        <text x="350" y="305" text-anchor="middle">Valid?</text>
+
+        <!-- Step 3 -->
+        <rect x="260" y="380" width="180" height="40" class="box" />
+        <text x="350" y="405" text-anchor="middle">Save Expense</text>
+
+        <!-- Step 4 -->
+        <rect x="260" y="460" width="180" height="40" class="box" />
+        <text x="350" y="485" text-anchor="middle">Update UI</text>
+
+        <!-- End -->
+        <circle cx="350" cy="550" r="10" fill="#000" />
+
+        <!-- Arrows -->
+        <line x1="350" y1="60" x2="350" y2="100" class="arrow" />
+        <line x1="350" y1="140" x2="350" y2="180" class="arrow" />
+        <line x1="350" y1="220" x2="350" y2="260" class="arrow" />
+
+        <!-- Yes path -->
+        <line x1="350" y1="340" x2="350" y2="380" class="arrow" />
+        <text x="360" y="360">Yes</text>
+
+        <!-- No path -->
+        <line x1="310" y1="300" x2="200" y2="300" class="arrow" />
+        <line x1="200" y1="300" x2="200" y2="200" class="arrow" />
+        <line x1="200" y1="200" x2="260" y2="200" class="arrow" />
+        <text x="210" y="290">No</text>
+
+        <line x1="350" y1="420" x2="350" y2="460" class="arrow" />
+        <line x1="350" y1="500" x2="350" y2="540" class="arrow" />
+
+    </svg>
+
+</body>
+
+</html>

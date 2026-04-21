@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +9,8 @@
     <meta name="theme-color" content="#8b5cf6">
     <link rel="manifest" href="manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <style>
         :root {
             --bg: #0f0f1a;
@@ -20,11 +22,17 @@
             --muted: #a0aec0;
             --dim: #64748b;
             --red: #ef4444;
-            --border: rgba(255,255,255,0.08);
+            --border: rgba(255, 255, 255, 0.08);
             --grad-purple: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             --grad-green: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
             background: var(--bg);
@@ -47,35 +55,49 @@
             overflow: hidden;
             order: 2;
         }
+
         .visual-panel::before {
             content: '';
             position: absolute;
             width: 500px;
             height: 500px;
-            background: radial-gradient(circle, rgba(16,185,129,0.18) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.18) 0%, transparent 70%);
             bottom: -80px;
             right: -80px;
             animation: pulse 7s ease-in-out infinite;
         }
+
         .visual-panel::after {
             content: '';
             position: absolute;
             width: 350px;
             height: 350px;
-            background: radial-gradient(circle, rgba(139,92,246,0.15) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
             top: -60px;
             left: -60px;
             animation: pulse 5s ease-in-out infinite reverse;
         }
+
         @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.6; }
-            50% { transform: scale(1.2); opacity: 1; }
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.6;
+            }
+
+            50% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
         }
+
         .steps-container {
             z-index: 1;
             text-align: center;
             margin-bottom: 48px;
         }
+
         .steps-title {
             font-size: 28px;
             font-weight: 800;
@@ -85,23 +107,27 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+
         .steps-subtitle {
             color: var(--muted);
             font-size: 14px;
             margin-bottom: 40px;
         }
+
         .steps {
             display: flex;
             flex-direction: column;
             gap: 24px;
             z-index: 1;
         }
+
         .step-item {
             display: flex;
             align-items: center;
             gap: 16px;
             text-align: left;
         }
+
         .step-num {
             width: 44px;
             height: 44px;
@@ -114,8 +140,17 @@
             font-weight: 800;
             flex-shrink: 0;
         }
-        .step-content h4 { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
-        .step-content p { font-size: 13px; color: var(--muted); }
+
+        .step-content h4 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .step-content p {
+            font-size: 13px;
+            color: var(--muted);
+        }
 
         /* Left (form) Panel */
         .form-panel {
@@ -127,10 +162,12 @@
             background: var(--bg);
             order: 1;
         }
+
         .form-card {
             width: 100%;
             max-width: 440px;
         }
+
         .back-link {
             display: inline-flex;
             align-items: center;
@@ -141,15 +178,33 @@
             margin-bottom: 32px;
             transition: color 0.2s;
         }
-        .back-link:hover { color: var(--text); }
-        .form-title { font-size: 30px; font-weight: 800; margin-bottom: 8px; }
-        .form-subtitle { color: var(--muted); font-size: 15px; margin-bottom: 36px; }
+
+        .back-link:hover {
+            color: var(--text);
+        }
+
+        .form-title {
+            font-size: 30px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .form-subtitle {
+            color: var(--muted);
+            font-size: 15px;
+            margin-bottom: 36px;
+        }
+
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 16px;
         }
-        .form-group { margin-bottom: 20px; }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
         .form-group label {
             display: block;
             font-size: 13px;
@@ -159,6 +214,7 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
+
         .form-group input {
             width: 100%;
             padding: 14px 16px;
@@ -170,19 +226,27 @@
             font-family: 'Inter', sans-serif;
             transition: all 0.3s ease;
         }
+
         .form-group input:focus {
             outline: none;
             border-color: var(--green);
-            box-shadow: 0 0 0 3px rgba(16,185,129,0.2);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
         }
-        .form-group input.error-input { border-color: var(--red); }
-        .form-group input::placeholder { color: var(--dim); }
+
+        .form-group input.error-input {
+            border-color: var(--red);
+        }
+
+        .form-group input::placeholder {
+            color: var(--dim);
+        }
 
         .password-strength {
             display: flex;
             gap: 4px;
             margin-top: 8px;
         }
+
         .strength-bar {
             height: 3px;
             flex: 1;
@@ -190,9 +254,18 @@
             background: var(--border);
             transition: background 0.3s;
         }
-        .strength-bar.active-weak { background: var(--red); }
-        .strength-bar.active-ok { background: var(--blue); }
-        .strength-bar.active-strong { background: var(--green); }
+
+        .strength-bar.active-weak {
+            background: var(--red);
+        }
+
+        .strength-bar.active-ok {
+            background: var(--blue);
+        }
+
+        .strength-bar.active-strong {
+            background: var(--green);
+        }
 
         .btn-register {
             width: 100%;
@@ -208,22 +281,38 @@
             margin-top: 8px;
             font-family: 'Inter', sans-serif;
         }
+
         .btn-register:hover {
             transform: translateY(-2px);
-            box-shadow: 0 12px 32px rgba(16,185,129,0.35);
+            box-shadow: 0 12px 32px rgba(16, 185, 129, 0.35);
         }
-        .btn-register.loading { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+        .btn-register.loading {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .login-link {
             text-align: center;
             color: var(--muted);
             font-size: 14px;
             margin-top: 24px;
         }
-        .login-link a { color: var(--purple); text-decoration: none; font-weight: 600; }
-        .login-link a:hover { text-decoration: underline; }
+
+        .login-link a {
+            color: var(--purple);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
         .error-box {
-            background: rgba(239,68,68,0.12);
-            border: 1px solid rgba(239,68,68,0.35);
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.35);
             color: #fca5a5;
             padding: 12px 16px;
             border-radius: 10px;
@@ -231,6 +320,7 @@
             margin-bottom: 20px;
             display: none;
         }
+
         .terms {
             font-size: 12px;
             color: var(--dim);
@@ -239,12 +329,22 @@
         }
 
         @media (max-width: 768px) {
-            body { flex-direction: column; }
-            .visual-panel { display: none; }
-            .form-panel { width: 100%; padding: 32px 24px; }
+            body {
+                flex-direction: column;
+            }
+
+            .visual-panel {
+                display: none;
+            }
+
+            .form-panel {
+                width: 100%;
+                padding: 32px 24px;
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="form-panel">
         <div class="form-card">
@@ -258,7 +358,8 @@
             </div>
             <div class="form-group">
                 <label>Password</label>
-                <input type="password" id="password" placeholder="Create a strong password" autocomplete="new-password" id="password">
+                <input type="password" id="password" placeholder="Create a strong password" autocomplete="new-password"
+                    id="password">
                 <div class="password-strength">
                     <div class="strength-bar" id="s1"></div>
                     <div class="strength-bar" id="s2"></div>
@@ -326,7 +427,7 @@
         passwordInput.addEventListener('input', () => {
             const val = passwordInput.value;
             const strength = val.length >= 8 ? (val.match(/[A-Z]/) && val.match(/[0-9]/) ? 4 : 3) : val.length >= 6 ? 2 : val.length > 0 ? 1 : 0;
-            ['s1','s2','s3','s4'].forEach((id, i) => {
+            ['s1', 's2', 's3', 's4'].forEach((id, i) => {
                 const bar = document.getElementById(id);
                 bar.className = 'strength-bar';
                 if (i < strength) {
@@ -344,7 +445,7 @@
         async function handleRegister() {
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
-            const confirm  = document.getElementById('confirm').value;
+            const confirm = document.getElementById('confirm').value;
             errorBox.style.display = 'none';
 
             if (!username || !password) { showError('Please fill in all fields.'); return; }
@@ -377,4 +478,5 @@
         document.getElementById('confirm').addEventListener('keydown', (e) => { if (e.key === 'Enter') handleRegister(); });
     </script>
 </body>
+
 </html>
