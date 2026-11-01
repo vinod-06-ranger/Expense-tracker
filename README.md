@@ -109,10 +109,7 @@ hostler-expense-tracker/
 ├── data.json                     # Persistent JSON database (users, expenses, debts)
 ├── package.json                  # Node.js project manifest & dependencies
 ├── render.yaml                   # Infrastructure-as-code for Render cloud hosting
-├── start.bat                     # One-click Windows development launcher
-├── activity_diagram.html         # UML Activity Diagram (SVG)
-├── sequence_diagram.html         # UML Sequence Diagram (SVG)
-└── use_case_diagram.html         # UML Use Case Diagram (SVG)
+└── start.bat                     # One-click Windows development launcher
 ```
 
 ---
@@ -173,15 +170,6 @@ start.bat
 npm start
 ```
 Then visit **`http://localhost:3000`** in your browser.
-
----
-
-## 📄 Software Design & UML Diagrams
-
-Interactive SVG diagrams are included in the repository:
-- **Use Case Diagram**: Open [`use_case_diagram.html`](use_case_diagram.html) in any browser.
-- **Activity Diagram**: Open [`activity_diagram.html`](activity_diagram.html) to see the transaction flow.
-- **Sequence Diagram**: Open [`sequence_diagram.html`](sequence_diagram.html) to view auth and API communication lifecycles.
 
 ---
 
