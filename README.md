@@ -197,5 +197,13 @@ If you are showcasing this project on your resume or portfolio, here are recomme
 
 ---
 
+## 👨‍💻 Author
+
+**Vinod Kumar**  
+B.Tech Computer Science Engineering Student  
+GitHub: [@vinod-06-ranger](https://github.com/vinod-06-ranger)
+
+---
+
 ## 📜 License
 Distributed under the MIT License. See `LICENSE` for more information.
